@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>clipcraft — reclame video din clipuri care există deja</title>
+<meta name="description" content="Dai linkul produsului. Caută clipuri în toate limbile, le alegi, scrie scriptul, scoate vocea din ElevenLabs și montează reclama cu subtitrare arsă. Nu generează imagini: taie și lipește ce există." />
+<meta property="og:title" content="clipcraft — reclame video din clipuri care există deja" />
+<meta property="og:description" content="De la linkul produsului la reclama montată, în câteva minute. Fără filmare, fără imagini generate." />
+<meta property="og:type" content="website" />
+<style>
+  :root {
+    --fundal: #09090b;
+    --panou: #121216;
+    --panou-2: #17171c;
+    --linie: #26262e;
+    --linie-tare: #3a3a46;
+    --text: #f4f4f6;
+    --mut: #8e8e9a;
+    --accent: #ff3b30;
+    --verde: #30d158;
+    --galben: #ffd60a;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--fundal);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  .lat { width: min(1120px, 92vw); margin: 0 auto; }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(12px);
+    background: rgba(9, 9, 11, 0.82);
+    border-bottom: 1px solid var(--linie);
+  }
+  .bara { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+  .marca { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 9px; }
+  .punct { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .nav { display: flex; gap: 22px; font-size: 14.5px; color: var(--mut); }
+  .nav a { text-decoration: none; }
+  .nav a:hover { color: var(--text); }
+  .buton {
+    display: inline-block; background: var(--text); color: #09090b; text-decoration: none;
+    padding: 12px 22px; border-radius: 999px; font-weight: 700; font-size: 15px; border: 0;
+  }
+  .buton.rosu { background: var(--accent); color: #fff; }
+  .buton.gol { background: transparent; color: var(--text); border: 1px solid var(--linie-tare); }
+
+  .erou { padding: 86px 0 40px; }
+  .eticheta {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--mut);
+    border: 1px solid var(--linie); border-radius: 999px; padding: 6px 14px; margin-bottom: 22px;
+  }
+  h1 {
+    font-size: clamp(36px, 6.2vw, 68px); line-height: 1.04; letter-spacing: -2px;
+    margin: 0 0 20px; font-weight: 800; max-width: 16ch;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .subtitlu { font-size: clamp(17px, 2.2vw, 21px); color: var(--mut); max-width: 56ch; margin: 0 0 30px; }
+  .actiuni { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .erou-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 46px; align-items: center; }
+  .telefon {
+    border: 1px solid var(--linie-tare); border-radius: 26px; padding: 9px; background: #000;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); max-width: 300px; margin-left: auto;
+  }
+  .telefon video { width: 100%; display: block; border-radius: 18px; background: #000; }
+
+  section { padding: 66px 0; border-top: 1px solid var(--linie); }
+  h2 { font-size: clamp(26px, 3.6vw, 38px); letter-spacing: -1px; margin: 0 0 10px; font-weight: 800; }
+  .intro { color: var(--mut); max-width: 58ch; margin: 0 0 34px; }
+
+  .fata-in-fata { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+  .cutie { background: var(--panou); border: 1px solid var(--linie); border-radius: var(--radius); padding: 22px 24px; }
+  .cutie.rea { border-color: #3b1f1f; }
+  .cutie.buna { border-color: #1f3b26; }
+  .cutie h3 { margin: 0 0 12px; font-size: 16px; letter-spacing: -0.2px; }
+  .cutie ul { margin: 0; padding-left: 18px; color: var(--mut); font-size: 15px; }
+  .cutie li { margin-bottom: 8px; }
+  .semn { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .rea .semn { color: var(--accent); }
+  .buna .semn { color: var(--verde); }
+
+  .pasi { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; counter-reset: pas; }
+  .pas { background: var(--panou); border: 1px solid var(--linie); border-radius: var(--radius); padding: 22px; position: relative; }
+  .pas::before {
+    counter-increment: pas; content: counter(pas);
+    position: absolute; top: 18px; right: 20px; font-size: 42px; font-weight: 800;
+    color: #1d1d24; letter-spacing: -2px; line-height: 1;
+  }
+  .pas h3 { margin: 0 0 8px; font-size: 17px; }
+  .pas p { margin: 0; color: var(--mut); font-size: 14.5px; }
+
+  .functii { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .functie { background: var(--panou-2); border: 1px solid var(--linie); border-radius: var(--radius); padding: 20px 22px; }
+  .functie h3 { margin: 0 0 7px; font-size: 16px; }
+  .functie p { margin: 0; color: var(--mut); font-size: 14.5px; }
+  .functie .cheie { color: var(--galben); font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; display: block; margin-bottom: 9px; }
+
+  .cifre { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+  .cifra { background: var(--panou); border: 1px solid var(--linie); border-radius: var(--radius); padding: 24px; }
+  .cifra b { display: block; font-size: 38px; letter-spacing: -1.6px; font-weight: 800; line-height: 1; margin-bottom: 8px; }
+  .cifra span { color: var(--mut); font-size: 14.5px; }
+
+  .cadre { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .cadre img { width: 100%; border-radius: 12px; border: 1px solid var(--linie); display: block; }
+
+  details { border-bottom: 1px solid var(--linie); padding: 18px 0; }
+  details summary { cursor: pointer; font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: "+"; color: var(--mut); font-weight: 400; font-size: 22px; line-height: 1; }
+  details[open] summary::after { content: "–"; }
+  details p { color: var(--mut); margin: 12px 0 0; max-width: 72ch; }
+
+  .final { text-align: center; padding: 86px 0 96px; }
+  .final h2 { max-width: 20ch; margin-inline: auto; }
+  footer { border-top: 1px solid var(--linie); padding: 28px 0 46px; color: var(--mut); font-size: 13.5px; }
+  .surse { color: var(--mut); font-size: 13px; margin-top: 14px; max-width: 42ch; margin-left: auto; }
+  .surse a { color: #8fb4ff; }
+
+  @media (max-width: 860px) {
+    .erou-grid { grid-template-columns: 1fr; gap: 34px; }
+    .telefon { margin: 0 auto; }
+    .surse { margin-inline: auto; text-align: center; }
+    .nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="lat bara">
+    <div class="marca"><span class="punct"></span> clipcraft</div>
+    <nav class="nav">
+      <a href="#cum">Cum merge</a>
+      <a href="#ce-face">Ce face</a>
+      <a href="#intrebari">Întrebări</a>
+    </nav>
+    <a class="buton" href="#final">Vreau să-l încerc</a>
+  </div>
+</header>
+
+<main>
+  <div class="lat erou">
+    <div class="erou-grid">
+      <div>
+        <span class="eticheta">● Rulează pe calculatorul tău, nu în cloud</span>
+        <h1>Reclame video din clipuri care <em>există deja</em>.</h1>
+        <p class="subtitlu">
+          Dai linkul produsului. Caută clipuri în toate limbile, le alegi pe cele bune,
+          scrie scriptul, scoate vocea din ElevenLabs și montează reclama cu subtitrare
+          arsă pe cuvânt. Fără filmare, fără imagini generate, fără abonamente lunare.
+        </p>
+        <div class="actiuni">
+          <a class="buton rosu" href="#final">Pune-l la treabă</a>
+          <a class="buton gol" href="#cum">Vezi cum lucrează</a>
+        </div>
+      </div>
+      <div>
+        <div class="telefon">
+          <video src="media/demo.mp4" controls playsinline preload="metadata" poster="media/cadru-1.0.jpg"></video>
+        </div>
+        <p class="surse">
+          Reclamă montată de clipcraft în 18 secunde, din trei clipuri publice de YouTube.
+          Sursele apar în aplicație pentru fiecare cadru.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <section id="problema">
+    <div class="lat">
+      <h2>Problema nu e că nu ai idei. E că nu ai imagini.</h2>
+      <p class="intro">
+        Ai produsul, ai prețul, ai oferta. Ca să faci o reclamă îți trebuie cadre cu produsul la treabă —
+        și acolo se oprește totul.
+      </p>
+      <div class="fata-in-fata">
+        <div class="cutie rea">
+          <h3><span class="semn">Până acum</span></h3>
+          <ul>
+            <li>Filmezi tu, cu telefonul, la lumină proastă.</li>
+            <li>Plătești un creator și aștepți o săptămână.</li>
+            <li>Generezi cu AI și se vede că e generat.</li>
+            <li>Cauți manual pe YouTube, în română, și găsești trei clipuri.</li>
+          </ul>
+        </div>
+        <div class="cutie buna">
+          <h3><span class="semn">Cu clipcraft</span></h3>
+          <ul>
+            <li>Caută produsul în opt limbi deodată, cu termenul pe care îl folosesc oamenii acolo.</li>
+            <li>Îți arată zeci de clipuri reale, cu produsul tău, filmate de alții care îl vând.</li>
+            <li>Alegi cadrele, el le taie exact pe vocea ta.</li>
+            <li>Ai reclama într-un sfert de oră, nu într-o săptămână.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cum">
+    <div class="lat">
+      <h2>Șase pași, toți în aceeași pagină</h2>
+      <p class="intro">Nimic de instalat în plus, nimic de configurat. Deschizi o pagină și mergi înainte.</p>
+      <div class="pasi">
+        <div class="pas">
+          <h3>Produsul</h3>
+          <p>Dai linkul. Citește numele, prețul, pozele și videoclipurile din pagină, apoi traduce denumirea în opt limbi.</p>
+        </div>
+        <div class="pas">
+          <h3>Ce clipuri cauți</h3>
+          <p>Zece tipuri: cineva care folosește, doar produsul, UGC, test, unboxing, înainte/după. Plus întrebările pe care nu le-ai pus.</p>
+        </div>
+        <div class="pas">
+          <h3>Clipurile găsite</h3>
+          <p>Fiecare titlu trece prin verificarea de potrivire, ca să nu primești perii de păr la un produs de bucătărie.</p>
+        </div>
+        <div class="pas">
+          <h3>Cum arată reclama</h3>
+          <p>Format, ritm, narativ, ofertă, subtitrare. Vezi pe loc, pe cadrul tău, cum arată fontul ales.</p>
+        </div>
+        <div class="pas">
+          <h3>Vocea</h3>
+          <p>Vocile din contul tău ElevenLabs, cu ▶ de ascultat. Pauzele lungi se scurtează automat, fără să strice sincronul.</p>
+        </div>
+        <div class="pas">
+          <h3>Reclama</h3>
+          <p>Taie, lipește, pune vocea, arde subtitrarea, egalizează volumul. Iese un MP4 și un .srt. Apoi te întreabă cum a ieșit.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ce-face">
+    <div class="lat">
+      <h2>Ce face, de fapt, ca să iasă bine</h2>
+      <p class="intro">Partea plictisitoare, cea care desparte un montaj care vinde de unul care pare făcut de robot.</p>
+      <div class="functii">
+        <div class="functie">
+          <span class="cheie">Căutare</span>
+          <h3>Termenul generic, în limba lui</h3>
+          <p>„Bandă de etanșare" găsește puțin. „Draught excluder" și „Türdichtung" găsesc de zece ori mai mult. Caută cu amândouă, în ghilimele, pe YouTube, Google, Bing și TikTok.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Potrivire</span>
+          <h3>Verifică fiecare titlu</h3>
+          <p>Un clip intră în listă doar dacă titlul chiar are legătură cu produsul. Restul rămân deoparte, cu motivul scris, ca să poți verifica ce a aruncat.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Tăiere</span>
+          <h3>Cadrul se schimbă pe frază</h3>
+          <p>Marcajele de timp vin de la ElevenLabs, pe caracter. Tăietura cade între replici, nu la mijlocul unui cuvânt, și începe pe o schimbare reală de plan.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Curățare</span>
+          <h3>Acoperă subtitrarea altuia</h3>
+          <p>Citește cu OCR textul ars în clipul original. Unde găsește, pune o bandă opacă exact peste el, iar subtitrarea ta vine deasupra. Benzile negre se taie singure.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Subtitrare</span>
+          <h3>Cuvânt cu cuvânt, exact pe voce</h3>
+          <p>Zece fonturi, culori la alegere, patru animații, poziție reglabilă. Se arde în video și iese și un .srt separat pentru platformă.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Sunet</span>
+          <h3>Mut pe clipuri, voce curată</h3>
+          <p>Clipurile găsite au muzică sau vorbă în altă limbă, deci intră pe mut. Totul se egalizează la -14 LUFS, cât cere feed-ul.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Corecturi</span>
+          <h3>Refaci un cadru, nu toată reclama</h3>
+          <p>Îți arată din ce clip vine fiecare cadru. Dacă unul nu e bun, îl refaci doar pe el, în câteva secunde.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Memorie</span>
+          <h3>Ține minte ce i-ai reproșat</h3>
+          <p>Spui „prea rapid" sau „subtitrarea e mică" o dată. Următoarea reclamă pornește deja cu setările corectate.</p>
+        </div>
+        <div class="functie">
+          <span class="cheie">Non-stop</span>
+          <h3>Un agent care caută mereu</h3>
+          <p>Pe teme, în fundal, fără legătură cu un proiect. Când începi o reclamă nouă, ai deja un depozit de clipuri din care alegi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dovada">
+    <div class="lat">
+      <h2>Trei cadre din reclama de sus</h2>
+      <p class="intro">
+        Produs: o bandă de etanșare de 25 de lei. Trei clipuri sursă, în engleză și franceză,
+        montate pe o voce românească. Nimic filmat, nimic generat.
+      </p>
+      <div class="cadre">
+        <img src="media/cadru-1.0.jpg" alt="Prim-plan cu banda de etanșare în mână, cu subtitrare galbenă" />
+        <img src="media/cadru-6.0.jpg" alt="Cadru din reclamă cu montajul benzii" />
+        <img src="media/cadru-11.0.jpg" alt="Cadru cu tăierea benzii la lățimea ușii" />
+      </div>
+      <div class="cifre" style="margin-top:26px">
+        <div class="cifra"><b>57</b><span>clipuri găsite pentru produsul ăsta, în 8 limbi</span></div>
+        <div class="cifra"><b>18 s</b><span>de la apăsat „Montează" la fișierul final</span></div>
+        <div class="cifra"><b>16/16</b><span>verificări automate trecute înainte să ți-l dea</span></div>
+        <div class="cifra"><b>0</b><span>abonamente lunare — rulează la tine</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="intrebari">
+    <div class="lat">
+      <h2>Întrebări</h2>
+      <details>
+        <summary>De unde vin clipurile și am voie să le folosesc?</summary>
+        <p>
+          De pe YouTube, TikTok, din pagina produsului tău sau de la furnizor, și din căutarea web.
+          Clipurile aparțin celor care le-au filmat, iar aplicația îți arată mereu sursa și canalul
+          pentru fiecare cadru folosit. Cel mai curat, în ordine: videoclipul furnizorului tău,
+          ce filmezi singur, materialul pentru care ai primit acordul, apoi restul. Decizia rămâne a ta,
+          dar nu o iei pe nevăzute.
+        </p>
+      </details>
+      <details>
+        <summary>Generează imagini cu inteligență artificială?</summary>
+        <p>
+          Nu. Taie și lipește clipuri care există. Singurul lucru generat e vocea, în ElevenLabs,
+          cu vocea pe care o alegi tu din contul tău.
+        </p>
+      </details>
+      <details>
+        <summary>Ce îmi trebuie ca să-l rulez?</summary>
+        <p>
+          Node, ffmpeg și yt-dlp — care se instalează o dată — plus o cheie ElevenLabs pentru voce.
+          Nu are nicio dependență de npm și nu trimite nimic în cloud: proiectele, clipurile și
+          reclamele stau în folderul tău.
+        </p>
+      </details>
+      <details>
+        <summary>Merge pentru orice produs?</summary>
+        <p>
+          Merge bine pentru produse fizice care se văd la treabă: casă, curățenie, bucătărie, auto,
+          grădină, animale, scule. Pentru servicii sau software nu are ce să filmeze nimeni, deci
+          găsește puțin.
+        </p>
+      </details>
+      <details>
+        <summary>Cât durează o reclamă, cap-coadă?</summary>
+        <p>
+          Căutarea durează două–patru minute, în funcție de câte limbi alegi. Descărcarea clipurilor,
+          sub un minut. Vocea, câteva secunde. Montajul, în jur de douăzeci de secunde. Restul timpului
+          e al tău: alegi cadrele și scrii scriptul.
+        </p>
+      </details>
+      <details>
+        <summary>Ce se întâmplă dacă reclama nu iese bine?</summary>
+        <p>
+          Te întreabă. Dacă e un singur cadru prost, îl refaci doar pe el. Dacă nu e bună deloc,
+          o reface toată, cu alte momente din aceleași clipuri. Iar ce i-ai reproșat rămâne notat și
+          schimbă setările cu care pornește data viitoare.
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <section class="final" id="final">
+    <div class="lat">
+      <h2>Linkul produsului e tot ce-ți trebuie ca să începi.</h2>
+      <p class="intro" style="margin-inline:auto">
+        clipcraft rulează local, pe calculatorul tău, cu o singură comandă.
+      </p>
+      <div class="actiuni" style="justify-content:center">
+        <a class="buton rosu" href="https://github.com/" rel="noreferrer">Ia-l de pe GitHub</a>
+        <a class="buton gol" href="#cum">Mai vezi o dată cum merge</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="lat">
+    clipcraft — reclame montate din clipuri găsite. Rulează local; nimic nu pleacă de pe calculatorul tău
+    în afară de căutări și de textul trimis la ElevenLabs.
+  </div>
+</footer>
+
+</body>
+</html>
