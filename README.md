@@ -1,39 +1,32 @@
-# clipcraft — pagina de prezentare
+# clipcraft — interfața
 
-Pagină statică, un singur fișier `index.html` plus folderul `media/`. Fără build, fără
-dependențe: orice gazdă de fișiere statice o servește ca atare.
+Aici stă **doar fața** aplicației: paginile, stilul și scriptul care desenează totul.
+Vercel o servește ca pagină statică.
 
-## Cum ajunge pe Vercel, prin GitHub
+**Motorul nu e aici și nu poate fi.** Căutarea clipurilor, descărcarea lor, vocea și
+montajul au nevoie de yt-dlp, ffmpeg și de joburi care țin minute. Alea rulează pe
+calculatorul lui Sergiu, din `D:\claude management\03-skills\clipcraft`.
 
-1. Faci un repo nou pe GitHub (gol, fără README).
-2. Din folderul ăsta:
+## Cum se leagă
 
-```bash
-git remote add origin https://github.com/<contul-tau>/clipcraft-landing.git
-```
+1. Pe calculator: `porneste-retea.bat` (pornește aplicația), apoi `porneste-tunel.bat`
+   (scoate un link public `https://....trycloudflare.com`).
+2. Pe pagina de aici, la prima deschidere apare o fereastră: pui adresa tunelului și
+   cheia. Se țin minte în browser, nu se trimit nicăieri altundeva.
+3. De atunci, pagina de pe Vercel comandă motorul de acasă.
 
-```bash
-git push -u origin main
-```
+Dacă deschizi aplicația direct de pe calculator (`http://127.0.0.1:3200`), nu trebuie
+configurat nimic — interfața și motorul sunt în același loc.
 
-3. Pe [vercel.com/new](https://vercel.com/new) alegi repo-ul. La „Framework Preset" lași
-   **Other**, la „Build Command" nu pui nimic, la „Output Directory" lași gol (rădăcina).
-4. Deploy. De atunci, orice `git push` o publică din nou singură.
+## Ce se schimbă aici
 
-## Ce schimbi înainte să o faci publică
+Fișierele sunt copii din `clipcraft/web/`. Dacă se modifică interfața, se copiază din nou
+și se face push; Vercel publică singur.
 
-- **Videoul demo** (`media/demo.mp4`) e montat din trei clipuri publice de YouTube, ca
-  dovadă că aplicația funcționează. Clipurile aparțin celor care le-au filmat. Dacă pagina
-  devine publică, pune în loc o reclamă montată din materialul tău sau al furnizorului tău,
-  plus cadrele din `media/cadru-*.jpg`.
-- **Butonul „Ia-l de pe GitHub"** din secțiunea finală trimite deocamdată la github.com.
-  Pune linkul repo-ului tău.
-- Dacă vrei formular de înscriere în loc de buton, se adaugă în secțiunea `#final`.
-
-## Local
-
-Orice server static merge:
-
-```bash
-npx --yes serve .
-```
+| aici | în aplicație |
+|---|---|
+| `index.html` | `web/index.html` |
+| `prezentare.html` | `web/prezentare.html` |
+| `static/app.js` | `web/app.js` |
+| `static/stil.css` | `web/stil.css` |
+| `static/media/` | `web/media/` |
