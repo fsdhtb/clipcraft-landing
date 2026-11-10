@@ -303,6 +303,21 @@ dialog iframe, dialog video { width: 100%; aspect-ratio: 16 / 9; border: 0; disp
 
 .gol-stare { color: var(--mut); text-align: center; padding: 40px 10px; border: 1px dashed var(--linie); border-radius: var(--radius); }
 
+/* ---------- cutii de mesaj ---------- */
+.cutie-atentie, .cutie-rea, .cutie-buna {
+  border-radius: var(--radius-mic);
+  padding: 12px 14px;
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  border: 1px solid var(--linie-tare);
+}
+.cutie-atentie { background: rgba(255, 214, 10, 0.08); border-color: rgba(255, 214, 10, 0.35); }
+.cutie-rea { background: rgba(255, 59, 48, 0.1); border-color: rgba(255, 59, 48, 0.4); }
+.cutie-buna { background: rgba(48, 209, 88, 0.1); border-color: rgba(48, 209, 88, 0.38); }
+.cutie-atentie ul { margin: 6px 0 0; }
+.cutie-rea code { background: rgba(0, 0, 0, 0.35); padding: 1px 5px; border-radius: 4px; }
+
 /* ---------- telefon și tabletă ---------- */
 @media (max-width: 820px) {
   body { font-size: 16px; }

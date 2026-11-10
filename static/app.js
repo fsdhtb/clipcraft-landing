@@ -77,8 +77,23 @@ function aratMotor(mesaj = "") {
 function legaMotor() {
   $("#b-motor-inchide").onclick = () => $("#dialog-motor").close();
   $("#b-motor-salveaza").onclick = async () => {
-    MOTOR.baza = $("#motor-baza").value.trim().replace(/\/+$/, "");
-    MOTOR.cheie = $("#motor-cheie").value.trim();
+    let baza = $("#motor-baza").value.trim();
+    let cheie = $("#motor-cheie").value.trim();
+    // Daca ai lipit linkul intreg, cu cheia in el, le despart eu.
+    try {
+      const u = new URL(baza);
+      const dinLink = u.searchParams.get("cheie");
+      if (dinLink) {
+        cheie = cheie || dinLink;
+        u.search = "";
+        u.pathname = "/";
+        baza = u.toString();
+      }
+    } catch {}
+    MOTOR.baza = baza.replace(/\/+$/, "");
+    MOTOR.cheie = cheie;
+    $("#motor-baza").value = MOTOR.baza;
+    $("#motor-cheie").value = MOTOR.cheie;
     localStorage.setItem("clipcraft-motor", MOTOR.baza);
     localStorage.setItem("clipcraft-cheie", MOTOR.cheie);
     $("#motor-stare").textContent = "incerc...";
@@ -149,6 +164,21 @@ function umpleListe() {
     .map((m) => `<button class="pastila mica" data-motiv="${m.cod}">${esc(m.nume)}</button>`)
     .join("");
 
+  if (c.link_public) {
+    const b = $("#b-link");
+    b.style.display = "";
+    b.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(c.link_public);
+        b.textContent = "copiat";
+        setTimeout(() => (b.textContent = "Link de partajat"), 1800);
+      } catch {
+        prompt("Trimite linkul asta:", c.link_public);
+      }
+    };
+    b.title = c.link_public;
+  }
+
   const inv = c.invatate;
   if (inv?.reclame > 0) {
     const text = `Am ținut minte ${inv.reclame} reclame. ${inv.motive.slice(0, 2).map((m) => m.nume.toLowerCase()).join(", ") || "nimic de corectat"}.`;
@@ -174,6 +204,7 @@ function deseneazaTot() {
   deseneazaProdus();
   deseneazaDenumiri();
   deseneazaTipuri();
+  deseneazaProblema();
   deseneazaClipuri();
   umpleBrief();
   deseneazaVoci();
@@ -218,6 +249,32 @@ function deseneazaDenumiri() {
         )
         .join("")}</div>`
     : '<p class="mut">Nicio denumire încă. Apasă „Traduce automat" sau scrie-le tu.</p>';
+}
+
+function deseneazaProblema() {
+  const p = S.proiect;
+  if (!p) return;
+  $("#p-problema").value = p.brief?.problema ?? "";
+  const termeni = p.problema?.termeni ?? [];
+  const steag = (cod) => S.config.limbi.find((l) => l.cod === cod)?.steag ?? "-";
+  $("#termeni-problema").innerHTML = termeni.length
+    ? `<div class="coloane c3">${termeni
+        .map(
+          (x, i) => `<div class="rand" style="gap:6px">
+            <span style="font-size:18px">${steag(x.limba)}</span>
+            <input type="text" value="${esc(x.termen)}" data-termen-problema="${i}" style="flex:1" />
+            <button class="buton gol mic" data-sterge-problema="${i}">&times;</button>
+          </div>`
+        )
+        .join("")}</div>`
+    : '<p class="mut">Niciun termen inca. Scrie problema mai sus si apasa butonul de tradus.</p>';
+
+  const areTip = (p.tipuri ?? []).includes("problema");
+  $("#stare-problema").textContent = areTip
+    ? termeni.length
+      ? ""
+      : "Ai bifat tipul Problema, dar n-ai termeni - nu voi cauta nimic pentru el."
+    : "Bifeaza tipul Problema, fara produs mai sus, ca sa se caute si astea.";
 }
 
 function deseneazaTipuri() {
@@ -532,6 +589,7 @@ function etichetezaSlidere() {
 function deseneazaRezultat() {
   const i = S.proiect?.iesire;
   $("#panou-feedback").style.display = i?.video ? "" : "none";
+  if (i?.video) deseneazaFeedback();
   if (!i?.video) {
     $("#rezultat").innerHTML = "";
     return;
@@ -565,6 +623,80 @@ function deseneazaRezultat() {
       pornestePoll();
     };
   });
+}
+
+/* Cu fiecare incercare nereusita, intreb mai exact. La a patra, ma opresc. */
+function nivelIntrebari() {
+  return Math.min(4, (S.proiect?.incercari ?? 0) + 1);
+}
+
+function deseneazaFeedback() {
+  const p = S.proiect;
+  if (!p?.iesire?.video) return;
+  const nivel = nivelIntrebari();
+  const abateri = p.iesire?.abateri ?? [];
+
+  $("#fb-abateri").style.display = abateri.length ? "" : "none";
+  if (abateri.length) {
+    $("#fb-abateri").innerHTML =
+      `<div class="cutie-atentie">Înainte să ți-o dau, am verificat-o față de ce am învățat și nu se potrivește la ${abateri.length}:` +
+      `<ul style="margin:8px 0 0;padding-left:18px">${abateri
+        .map((a) => `<li>${esc(a.ce)}: așteptam <b>${esc(String(a.asteptat))}</b>, e <b>${esc(String(a.gasit))}</b></li>`)
+        .join("")}</ul></div>`;
+  }
+
+  if (p.escaladat || nivel >= 4) {
+    $("#fb-titlu").textContent = "Am încercat de patru ori și tot nu iese";
+    $("#fb-sub").textContent = "Mă opresc aici ca să nu-ți mai pierd timpul.";
+    $("#fb-butoane").style.display = "none";
+    $("#fb-specific").style.display = "none";
+    $("#fb-escaladat").style.display = "";
+    $("#fb-escaladat").innerHTML =
+      `<div class="cutie-rea"><b>I-am semnalat lui Sergiu.</b><br />` +
+      `Patru încercări pe reclama asta, cu tot ce mi-ai spus notat. ` +
+      `Apare la el în <code>node cli.mjs lectii</code> și în <code>data/lectii.json</code>.<br />` +
+      `<span class="mut">Dacă vrei totuși să mai încerci, apasă mai jos.</span>` +
+      `<div class="rand" style="margin-top:10px"><button class="buton gol mic" id="b-fb-oricum">Mai încearcă oricum</button></div></div>`;
+    $("#b-fb-oricum").onclick = async () => {
+      $("#fb-escaladat").style.display = "none";
+      $("#fb-butoane").style.display = "";
+      await api(`/api/proiect/${p.id}/mai-incearca`, { metoda: "POST", corp: {} });
+      pornestePoll();
+    };
+    return;
+  }
+
+  $("#fb-escaladat").style.display = "none";
+  $("#fb-butoane").style.display = "";
+  const titluri = {
+    1: ["Cum a ieșit?", "Spune-mi pe față. Ce-mi zici aici schimbă și reclama asta, și setările următoarei."],
+    2: ["A doua încercare — ce anume n-a mers?", "Hai mai exact, ca să nu mai dau pe lângă."],
+    3: ["A treia încercare — mergem pe bucăți", "Întreb de tot ce poate fi greșit, ca următoarea să fie bună."],
+  };
+  $("#fb-titlu").textContent = titluri[nivel][0];
+  $("#fb-sub").textContent = titluri[nivel][1];
+}
+
+/** Intrebarile pe bucati, de la a treia incercare incolo. */
+function intrebariSpecifice() {
+  const segmente = S.proiect?.plan?.segmente ?? [];
+  const sel = (id, optiuni) =>
+    `<select id="${id}">${optiuni.map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select>`;
+  return `
+    <div class="coloane c3">
+      <div><label class="eticheta">Ritmul</label>${sel("fs-ritm", [["", "e bun"], ["prea-rapid", "prea rapid"], ["prea-lent", "prea lent"]])}</div>
+      <div><label class="eticheta">Vocea</label>${sel("fs-voce", [["", "e bună"], ["voce-pauze", "are pauze, sună lent"], ["voce-nepotrivita", "nu se potrivește"]])}</div>
+      <div><label class="eticheta">Subtitrarea</label>${sel("fs-sub", [["", "e bună"], ["subtitrare-mica", "prea mică"], ["subtitrare-mare", "prea mare"], ["subtitrare-pozitie", "stă prost"]])}</div>
+      <div><label class="eticheta">Lungimea</label>${sel("fs-durata", [["", "e bună"], ["prea-lunga", "prea lungă"], ["prea-scurta", "prea scurtă"]])}</div>
+      <div><label class="eticheta">Scriptul</label>${sel("fs-script", [["", "e bun"], ["script-slab", "nu convinge"]])}</div>
+      <div><label class="eticheta">Sunetul din clipuri</label>${sel("fs-sunet", [["", "e bun"], ["sunet", "deranjează"]])}</div>
+    </div>
+    <label class="eticheta">Care cadre nu sunt bune? <span class="optional">apasă pe ele</span></label>
+    <div class="pastile" id="fs-cadre">${segmente
+      .map((s, i) => `<button class="pastila mica" data-cadru-rau="${i}">${i + 1}. ${esc((s.replica ?? "").slice(0, 22))}</button>`)
+      .join("")}</div>
+    <label class="eticheta" for="fs-text">Și cu cuvintele tale, ce ar trebui să fie altfel?</label>
+    <textarea id="fs-text" placeholder="ex. primul cadru arată ambalajul altcuiva; vocea se grăbește la final"></textarea>`;
 }
 
 function deseneazaCadrePentruFeedback() {
@@ -783,6 +915,7 @@ function legaEvenimente() {
     tipuri.has(b.dataset.tip) ? tipuri.delete(b.dataset.tip) : tipuri.add(b.dataset.tip);
     S.proiect.tipuri = [...tipuri];
     deseneazaTipuri();
+    deseneazaProblema();
     await api(`/api/proiect/${S.proiect.id}`, { metoda: "PATCH", corp: { tipuri: S.proiect.tipuri } });
   });
 
@@ -790,6 +923,43 @@ function legaEvenimente() {
     const b = e.target.closest(".pastila");
     if (b) b.classList.toggle("aleasa");
   });
+  $("#p-problema").addEventListener("input", () => {
+    if (!S.proiect) return;
+    S.proiect.brief.problema = $("#p-problema").value;
+    clearTimeout(ceasBrief);
+    ceasBrief = setTimeout(
+      () => api(`/api/proiect/${S.proiect.id}`, { metoda: "PATCH", corp: { brief: { problema: S.proiect.brief.problema } } }),
+      500
+    );
+  });
+  $("#b-traduce-problema").onclick = async () => {
+    if (!S.proiect) return alert("Intai da linkul produsului.");
+    if (!$("#p-problema").value.trim()) return alert("Scrie intai problema, intr-un rand.");
+    await api(`/api/proiect/${S.proiect.id}`, { metoda: "PATCH", corp: { brief: { problema: $("#p-problema").value } } });
+    $("#b-traduce-problema").textContent = "Traduc...";
+    const r = await api(`/api/proiect/${S.proiect.id}/problema`, { metoda: "POST", corp: { auto: true } });
+    $("#b-traduce-problema").textContent = "Tradu in toate limbile";
+    S.proiect.problema = { ...(S.proiect.problema ?? {}), termeni: r.termeni ?? [] };
+    deseneazaProblema();
+  };
+  $("#termeni-problema").addEventListener("input", (e) => {
+    const i = e.target.dataset.termenProblema;
+    if (i === undefined) return;
+    S.proiect.problema.termeni[Number(i)].termen = e.target.value;
+    clearTimeout(ceasBrief);
+    ceasBrief = setTimeout(
+      () => api(`/api/proiect/${S.proiect.id}/problema`, { metoda: "POST", corp: { termeni: S.proiect.problema.termeni } }),
+      500
+    );
+  });
+  $("#termeni-problema").addEventListener("click", async (e) => {
+    const i = e.target.dataset.stergeProblema;
+    if (i === undefined) return;
+    S.proiect.problema.termeni.splice(Number(i), 1);
+    deseneazaProblema();
+    await api(`/api/proiect/${S.proiect.id}/problema`, { metoda: "POST", corp: { termeni: S.proiect.problema.termeni } });
+  });
+
   $("#c-prag").addEventListener("input", () => ($("#et-prag").textContent = `${$("#c-prag").value}%`));
 
   $("#b-cauta").onclick = async () => {
@@ -988,23 +1158,75 @@ function legaEvenimente() {
     deseneazaCadrePentruFeedback();
   };
   $("#b-fb-tot").onclick = () => {
-    $("#fb-detalii").style.display = "";
     $("#fb-cadre").style.display = "none";
+    if (nivelIntrebari() >= 3) {
+      $("#fb-detalii").style.display = "none";
+      $("#fb-specific").style.display = "";
+      $("#fb-specific").innerHTML =
+        intrebariSpecifice() +
+        '<div class="rand" style="margin-top:12px"><button class="buton rosu" id="b-fs-trimite">Trimite și refă</button>' +
+        '<span class="mut" id="fs-stare"></span></div>';
+      $("#fs-cadre").addEventListener("click", (e) => {
+        const b = e.target.closest(".pastila");
+        if (b) b.classList.toggle("aleasa");
+      });
+      $("#b-fs-trimite").onclick = () => trimiteFeedback("specific");
+      return;
+    }
+    $("#fb-specific").style.display = "none";
+    $("#fb-detalii").style.display = "";
     $("#fb-stare").textContent = "Spune-mi ce n-a mers și refac toată reclama, cu alte momente din aceleași clipuri.";
   };
   $("#fb-motive").addEventListener("click", (e) => {
     const b = e.target.closest(".pastila");
     if (b) b.classList.toggle("aleasa");
   });
-  $("#b-fb-trimite").onclick = async () => {
-    const motive = $$("#fb-motive .pastila.aleasa").map((b) => b.dataset.motiv);
-    const detalii = $("#fb-text").value.trim();
-    await api(`/api/proiect/${S.proiect.id}/feedback`, { metoda: "POST", corp: { verdict: "slab", motive, detalii } });
-    const fara = motive.includes("clip-prost") ? [] : [];
-    $("#fb-stare").textContent = "Am notat. Refac reclama…";
-    await api(`/api/proiect/${S.proiect.id}/mai-incearca`, { metoda: "POST", corp: { fara } });
+  async function trimiteFeedback(sursa) {
+    const stare = sursa === "specific" ? $("#fs-stare") : $("#fb-stare");
+    let motive = [];
+    let detalii = "";
+    let cadreRele = [];
+    if (sursa === "specific") {
+      motive = ["#fs-ritm", "#fs-voce", "#fs-sub", "#fs-durata", "#fs-script", "#fs-sunet"]
+        .map((id) => $(id)?.value)
+        .filter(Boolean);
+      cadreRele = $$("#fs-cadre .pastila.aleasa").map((b) => Number(b.dataset.cadruRau));
+      if (cadreRele.length) motive.push("cadre-gresite");
+      detalii = $("#fs-text").value.trim();
+      if (!motive.length && !detalii) {
+        stare.textContent = "Alege măcar ceva, altfel refac la fel.";
+        return;
+      }
+    } else {
+      motive = $$("#fb-motive .pastila.aleasa").map((b) => b.dataset.motiv);
+      detalii = $("#fb-text").value.trim();
+    }
+
+    stare.textContent = "Am notat…";
+    const r = await api(`/api/proiect/${S.proiect.id}/feedback`, {
+      metoda: "POST",
+      corp: { verdict: "slab", motive, detalii, cadre: cadreRele },
+    });
+
+    const noiReguli = (r.invatate ?? []).filter((x) => x.tocmaiDevenitRegula);
+    if (noiReguli.length) {
+      $("#fb-invatat").style.display = "";
+      $("#fb-invatat").innerHTML =
+        "<div class=\"cutie-buna\"><b>De acum nu mai greșesc asta.</b> " +
+        `S-a repetat de trei ori, așa că am făcut regulă din: ${noiReguli.map((x) => esc(x.cod)).join(", ")}.</div>`;
+    }
+
+    if (r.escaladare) {
+      await incarcaProiect(S.proiect.id);
+      return;
+    }
+
+    stare.textContent = "Refac reclama…";
+    await api(`/api/proiect/${S.proiect.id}/mai-incearca`, { metoda: "POST", corp: {} });
     pornestePoll();
-  };
+  }
+
+  $("#b-fb-trimite").onclick = () => trimiteFeedback("simplu");
 
   /* ---- depozit ---- */
   $("#b-veghe").onclick = async () => {

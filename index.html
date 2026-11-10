@@ -27,7 +27,7 @@
       <div class="unealta"><span>ffmpeg</span><span id="u-ffmpeg">…</span></div>
       <div class="unealta"><span>yt-dlp</span><span id="u-ytdlp">…</span></div>
       <div class="unealta"><span>ElevenLabs</span><span id="u-11">…</span></div>
-      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="buton gol mic" id="b-proiecte">Proiectele mele</button><a class="buton gol mic" href="/prezentare" style="text-decoration:none">Ce e clipcraft</a><button class="buton gol mic" id="b-motor">Motorul</button></div>
+      <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap"><button class="buton gol mic" id="b-proiecte">Proiectele mele</button><a class="buton gol mic" href="/prezentare" style="text-decoration:none">Ce e clipcraft</a><button class="buton gol mic" id="b-motor">Motorul</button><button class="buton mic" id="b-link" style="display:none">Link de partajat</button></div>
     </div>
   </aside>
 
@@ -68,6 +68,22 @@
 
       <div class="panou">
         <div class="carduri" id="tipuri"></div>
+      </div>
+
+      <div class="panou" id="panou-problema">
+        <h2>Clipurile cu problema</h2>
+        <p class="sub">
+          Pentru tipul „Problema, fără produs" nu caut produsul — caut problema. Un clip
+          cu gresia murdară n-are cum să aibă numele produsului tău în titlu.
+        </p>
+        <label class="eticheta" for="p-problema">Ce problemă rezolvă produsul, în cuvintele tale</label>
+        <input type="text" id="p-problema" placeholder="gresie murdară și mucegai la rosturi" />
+        <p class="mut" style="margin:6px 0 0">Scurt și concret, cum ar căuta un om care are problema. Nu „curățenie", ci „mucegai la rosturi".</p>
+        <div id="termeni-problema" style="margin-top:12px"></div>
+        <div class="rand" style="margin-top:10px">
+          <button class="buton gol mic" id="b-traduce-problema">Tradu în toate limbile</button>
+          <span class="mut" id="stare-problema"></span>
+        </div>
       </div>
 
       <div class="panou">
@@ -408,13 +424,20 @@
       <div id="rezultat"></div>
 
       <div class="panou" id="panou-feedback" style="display:none">
-        <h2>Cum a ieșit?</h2>
-        <p class="sub">Spune-mi pe față. Ce-mi zici aici schimbă și reclama asta, și setările cu care pornește următoarea.</p>
-        <div class="pastile">
+        <h2 id="fb-titlu">Cum a ieșit?</h2>
+        <p class="sub" id="fb-sub">Spune-mi pe față. Ce-mi zici aici schimbă și reclama asta, și setările cu care pornește următoarea.</p>
+
+        <div id="fb-abateri" style="display:none"></div>
+        <div id="fb-escaladat" style="display:none"></div>
+
+        <div class="pastile" id="fb-butoane">
           <button class="buton rosu mic" id="b-fb-bun">E bună, o iau așa</button>
           <button class="buton gol mic" id="b-fb-cadru">Un cadru nu e bun</button>
           <button class="buton gol mic" id="b-fb-tot">N-a ieșit, mai încearcă</button>
         </div>
+
+        <div id="fb-specific" style="display:none;margin-top:16px"></div>
+        <div id="fb-invatat" style="display:none;margin-top:14px"></div>
 
         <div id="fb-detalii" style="display:none;margin-top:16px">
           <label class="eticheta">Ce anume n-a mers? <span class="optional">bifează tot ce se potrivește</span></label>
